@@ -1,0 +1,130 @@
+\chapter{Methodology}
+
+
+\section{Density Functional Theory key concepts}
+
+For many-body electronic structure calculations the Born–Oppenheimer approximation is used to consider the electrons as moving and the nuclei as stationary, the last one generate a static external potential V. A wavefunction \textPsi (\textbf{r$_1$},....\textbf{r$_n$} ) is used for describing the many-electron time-independent Schrödinger equation in the stationary electronic state, eq.~\ref{eq:sch}.
+
+\begin{equation}
+    \hat H \Psi = [\hat T + \hat V + \hat U ]\Psi = \\ = [\sum\limits_{i}^N (-\frac{\hbar^2}{2m_i}\bigtriangledown_i^2)+\sum_{i}^{N}V(\textbf{r_i})+\sum_{i<j}^{N}U(\textbf{r_i, r_j})] \Psi = E\Psi 
+\label{eq:sch}
+\end{equation}
+
+Here N is the number of electrons in the system, $\hat H$ is the Hamiltonian, E is the  total energy, $\hat T$  is the kinetic energy, $\hat V$  is the potential energy in the external potential of positively charged nuclei, $\hat U$ is the electron–electron interaction energy. The many-electron wave function \textPsi (\textbf{r$_1$},....\textbf{r$_n$} ) is represented with Slater determinant and single-particle wave functions. The Hartree–Fock method can be used to solve the problem, however its application is limited to periodic systems, as the wave function depends on 3N variables. The Density Functional Theory (DFT) gives an opportunity to solve the problem in a different way. In this case the electron density n(r) is a key variable with dependency just on three spatial coordinates, which is given by eq.~\ref{eq:dens} for a normalized \textPsi.
+
+\begin{equation}
+n(\textbf{r}) = N\int d^3 \textbf{r_2}...\int d^3 \textbf{r_N} \Psi ^{\ast} (\textbf{r_1}, \textbf{r_2}, ... \textbf{r_N}) \Psi (\textbf{r_1}, \textbf{r_2}, ... \textbf{r_N})  
+\label{eq:dens}
+\end{equation}
+
+Theoretical justification of density functional theory usage is confirmed by the Hohenberg–Kohn theorems for the ground states. The first theorem states that the ground state properties of a many-electron system are uniquely determined by electronic density, eq.~\ref{eq:1HK}. Thus, the complex dependency on 3N electronic coordinates in the Hartree–Fock method converts to 3 coordinates in electronic density functional. 
+
+\begin{equation}
+\Psi_0 = \Psi[n_0] 
+\label{eq:1HK}
+\end{equation}
+
+The second theorem claims that the electron density that minimizes the energy of the overall functional is the true electron density corresponding to the full solutions of the Schr\"odinger equation, eq.~\ref{eq:2HK}.
+
+\begin{equation}
+E_0 = E[n_0] = \langle \Psi[n_0]| \hat T + \hat V + \hat U |\Psi[n_0] \rangle
+\label{eq:2HK}
+\end{equation}
+
+Generally, the external potential $\hat V$ can be rewritten via electronic density as in the equation~\ref{eq:V}. In comparison with universal T[n] and U[n] functionals, the V[n] functional is dependent on the system under study. For each system the minimization of the full energy with relation to the density n(\textbf{r}) is necessary ~\ref{eq:E}.
+
+\begin{equation}
+V[n] = \int V(\textbf{r})n(\textbf{r})d^3\textbf{r}
+\label{eq:V}
+\end{equation}
+
+\begin{equation}
+E[n] = T[n] + U[n] + \int V(\textbf{r})n(\textbf{r})d^3\textbf{r}
+\label{eq:E}
+\end{equation}
+
+The variational task of finding the minimum value of  E[n] can be solved using Kohn-
+Sham equations, where many-particle interactions are taken into account by the effective potential acting on non-interacting particles.
+
+The energy functional is provided in the equation~\ref{eq:Es}.
+\begin{equation}
+E_s[n] = \langle \Psi_s[n]| \hat T + \hat V_s |\Psi_s[n] \rangle
+\label{eq:Es}
+\end{equation}
+
+Be solving the Kohn-Sham equations for non-interacting electron system in the effective potential the  $\varphi$ orbitals (\ref{eq:phi}) are obtained, according to which the electron density of the whole many-electron system is calculated~(\ref{eq:n}).
+
+\begin{equation}
+[-\frac{\hslash\hbar^2}{2m}\bigtriangledown_i^2+V_s(\textbf{r})] \varphi_i (\textbf{r}) = \varepsilon_i \varphi_i (\textbf{r})
+\label{eq:phi}
+\end{equation}
+
+
+\begin{equation}
+n_s(\textbf{r}) = \sum\limits_{i}^N|\varphi_i (\textbf{r})|^2
+\label{eq:n}
+\end{equation}
+
+Once the electronic density is known the effective  potential is calculated according to the following equation:
+
+\begin{equation}
+V_s (\textbf{r}) = V (\textbf{r}) + \int \frac{e^2 n_s (\textbf{r'})}{|\textbf{r}-\textbf{r'}|}d^3 \textbf{r'} + V_{XC} [n_s(\textbf{r})]
+\label{eq:V}
+\end{equation}
+where $V_{XC} [n_s(\textbf{r})]$ is exchange-correlation functional which effectively takes into account many-particle iteractions. However, the exact form of this potential is not known and should be approximated. The examples of such approximations are Local Density Approximation (LDA) and Generalized Gradient Approximations (GGA). 
+
+In practice, one start from a guess electronic density and proceed with iterative solution of the provided equations until self-consistency is achieved.
+
+
+\section{Computational details}
+
+The atomic structure and energetics of intrinsic OH defects in Li(Fe,Mn)PO$_4$ was investigated by first-principles calculations. All calculations were based on the Density Functional Theory (DFT) using a generalized-gradient approximation (GGA) ~\cite{perdew1996generalized}, Perdew–Burke–Ernzerhof (PBE) exchange-correlation model and Projector-Augmented-Wave (PAW) method  as implemented in the VASP program~\cite{kresse1996efficiency}. A python-based framework (SIMAN)~\cite{siman} was used for the preparation and analysis of DFT calculations.
+
+The investigation of pure and defective Li(Fe,Mn)PO$_4$ was performed using one unit cell, which contains four formula units.
+The energy cut-off was equal to 400 eV, the k-point mesh is $3\times 4 \times 5$ for one unit cell.
+The Gaussian smearing was used for Brillouin-zone integration.  All calculations were spin-polarized with ferromagnetic state of Li(Fe,Mn)PO$_4$. The DFT+U calculations were carried out using Dudarev scheme. The value of U for Fe is 4 eV~\cite{jain2011high}.
+% have been provided during 50 ionic step with NSW = 50 parameter. This NSW parameter was equal to 0 in case of single point calculation without atomic structure relaxation to achieve the unit cell energy estimation. 
+
+
+The optimization of lattice constants was performed by a volume scan method using seven fixed volumes (+/- 5\%). The relaxations of atomic positions and cell shape were performed using quasi-Newton algorithm implemented in the VASP code.
+The relaxation of atomic positions was performed until the maximum force acting on atoms was less than 0.05~eV/\AA. 
+
+% According to the energy value of each structure, the more stable structure was determined as an equilibrium unit cell with corresponding lattice parameters. This structure was used for further investigations.
+
+
+All calculations are performed using supercomputer clusters (Skoltech clusters Magnus and Pardus, DTU cluster Niflheim). The visualization of atomic structures was performed in Jmol and Vesta programs.
+
+
+\section{Scan of hydrogen potential energy surface}
+
+To study the structure of PO$_4$/(OH)$_4$ defects in detail we performed a full scan of the potential energy surface (PES) for hydrogen atoms inside and around the phosphorus vacancy. 
+
+% Potential Energy Surface (PES) search is a method of equilibrium hydrogen positions finding in phosphorus vacancy site. It is used to compare formation energies of different defective structure configurations. The formation of substitution defects occurs consistently depending on the region under consideration. In case of substitution of phosphorus by four hydrogen atoms each of four hydrogen atoms alternately fits to the tetrahedral oxygen environment. 
+The PES was constructed iteratively using single-point calculations for each added hydrogen atom. As a result a separate PES construction was obtained for each considered defect composition: PO$_4$/HO$_4$, PO$_4$/H$_2$O$_4$, PO$_4$/H$_3$O$_4$, and PO$_4$/H$_4$O$_4$. 
+The first PES (PO$_4$/H$_1$O$_4$) gives the minimum energy position of one H in the P vacancy. This configuration, after full atomic optimization was fixed and used for constructing the second PES (PO$_4$/H$_2$O$_4$ defect). In the same manner the third PES (PO$_4$/H$_3$O$_4$) was constructed from the optimized lowest energy PO$_4$/H$_2$O$_4$ configuration and the fourth PES (PO$_4$/H$_4$O$_4$) - from the optimized lowest energy PO$_4$/H$_3$O$_4$ configuration. 
+
+
+Since it is known that H should form covalent bond with O, only spherically symmetrical PES were considered around each of the four oxygens left after P removal. The example of PES is provided in Figure~\ref{ris:PES1}. 
+% The possible distribution of hydrogen positions around the first oxygen of tetrahedron was considered. The distance between oxygen and hydrogen is equal to 1\AAcriterion was chosen as a criterion for localization. As a result, all possible positions of hydrogen formed a spherical symmetrical cloud of hydrogen around oxygen in total. Each of hydrogen positions corresponded to a separate structure with phosphorus vacancy and one hydrogen. The single point calculation was used to determine the energy of each structure. 
+The energy of H used for PES construction was calculated according to the equation:
+
+\begin{equation}
+E_{\rm H} = \frac{1}{n}[E({\rm LiFeP_{1-x}H_{nx}O_4}) - E({\rm LiFeP_{1-x}H_{(n-1)x}O_4} ) - \frac{1}{2}xE({\rm H_2})]
+\label{eq:form}
+\end{equation}
+where $E({\rm LiFeP_{1-x}H_{nx}O_4})$ and $E({\rm LiFeP_{1-x}H_{(n-1)x}O_4} )$ are the total energies of unit cells n and n-1 H atoms, respectively, and $E({\rm H_2})$ is a total energy of H$_2$ molecule in a gas phase. 
+The $E_{\rm H}$ is  visualized by assigning a particular color within red-green-blue spectrum, from blue (for lower energy) to red (as high energy). 
+
+% Then the crystal of LiFePO$_4$ with phosphorus vacancy and all hydrogen positions was colored accordingly. 
+% Each energetic characteristic of hydrogen position was found to be in strong dependence of neighboring areas: it could be polyhedral sites that are either void or occupied by other atom. According to that knowledge, the relaxation of atomic positions was provided for each hydrogen localization in individual spatial area. After that, the most stable equilibrium structure of LiFePO$_4$ with substitution of phosphorus by one hydrogen was considered. This structure became the initial configuration for the further step, where PES scan was used to identify the second hydrogen atom position around second oxygen. In this application n is equal to 2 in the equation \ref{eq:form}. This procedure was repeated two more times. 
+% Finally, all possible hydrogen configurations were considered, and the equilibrium structure of LiFePO$_4$ with substitution of phosphorus by four hydrogen was found. 
+The programming code for PES scan and its visualization is presented in Appendix A, section A.1--A.5.
+
+\section{Molecular Dynamics study}
+
+The investigation of Li(Fe,Mn)P$_{1-x}$H$_{4x}$O$_4$ dynamics at elevated temperatures was performed for 1$\times$2$\times$2 supercell with 115 atoms using molecular dynamics (MD) simulation as implemented in the VASP code. The initial atomic configuration of PO4/HO4 defect was used from the PES study.
+% containing 16 formunits of LiFePO$_4$ with four hydrogen atoms in their equilibrium positions within phosphorus vacancy site, which were found from PES procedure. Generally, a supercell with 115 atoms was under molecular dynamic investigation. 
+For MD study the precision of calculations was reduced. The k-point spacing was set to 0.7 {\AA}$^{-1}$ and 300 eV energy cut-off was used. 
+% Since it was a molecular dynamic study, the IBRION parameter was equal to 0 value, which is a tag of standard \textit{ab-initio} MD calculations. 
+MD simulations were performed at several fixed temperatures: 690 K, 890 K and 1390 K. These values correspond to the annealing temperatures during synthesis. A time step of 1 fs  was used for the integration of motion equations, and 2000 or 10000 ionic steps were used, which corresponds to 2 ps and 10 ps simulation time runs. 
+% where a Nosé-mass corresponding to a period of 40-time steps.

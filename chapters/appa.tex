@@ -1,0 +1,224 @@
+%\makeatletter
+%\newcommand{\verbatimfont}[Times New Roman]{\def\verbatim@font{#1}}%
+%\makeatother
+
+\chapter{Program code}
+
+
+\section{Potential Energy Surface method}
+\begin{verbnobox}[\rmfamily]
+def PES_scan(submit = 0, cl = None, a = None, b = None, readfiles = 1):
+    """
+    Create spherical PES around oxygen for H 
+    INPUT:
+    submit (bool) - 1 - run add() and submit to cluster, 0 - run res()
+    cl = initial structure
+    a = min of O-H distance
+    b = max of O-H distance
+    RETURN:
+    namelist - list of calculation names
+    """
+    sc = cl.end
+    sc_Hrep = copy.deepcopy(sc)
+    sc_Hall = copy.deepcopy(sc)
+
+    R = sc.rprimd
+    R1n = np.linalg.norm(R[0])
+    R2n = np.linalg.norm(R[1])
+    R3n = np.linalg.norm(R[2])
+
+    # function for choosing the atom:
+    xO1 = cl.init.xred[18] # i used O position from inital
+    xO1c= sc.xcart[18] 
+    'z =', xO1[2], '\nParemeters of uc:', 'a =', R1n, 'b =', R2n, 'c =', R3n)
+    
+    #For first atom
+    # x_list = [num / 100 for num in range(int(round((xO1[0] - 0.3)*100)), 
+    int(round((xO1[0] + 0.4)*100)), 3)]
+    # y_list = [numy / 100 for numy in range(int(round((xO1[1] - 0.3)*100)),
+    int(round((xO1[1] + 0.4)*100)), 3)]
+    # z_list = [numz / 100 for numz in range(int(round((xO1[2] - 0.3)*100)), 
+    int(round((xO1[2] + 0.4)*100)), 4)]
+    
+    num=0
+    namelist = []
+    for i, x in enumerate(x_list):
+        for j, y in enumerate(y_list):
+            for k, z in enumerate(z_list):
+                d=math.sqrt(math.pow((x-xO1[0])*R1n, 2)+
+                +math.pow((y-xO1[1])*R2n, 2)+math.pow((z-xO1[2])*R3n,2))
+                if (d >= a and d <= b):
+                    num+=1
+                    xH = xred2xcart([np.array([x, y, z])],R)[0]
+                    d1, d2 = image_distance(xH, xO1c, R)
+                    print( 'Distances are: {:3.2f} {:3.2f}'.format(d1, d))
+                    sc_Hijk = sc_Hrep.add_atom([x / 1, y / 1, z / 1], 'H')
+                    sc_Hall = sc_Hall.add_atom([x / 1, y / 1, z / 1], 'H')
+                    id  = (str(num)+'LFP'+"-"+str(i)+"-"+str(j)+"-"+str(k), 
+                    '0', 1)
+                    if submit:
+                        add(*id, up = 'up2', input_st = sc_Hijk, it_folder = 
+                        'LFP_scan_O4/', cluster='pardus', corenum=4)
+                    else:
+                        res(*id, up = 'up2', show = 'fo', readfiles = readfiles) 
+                        # try show = 'en', 'conv', 'est'
+                    namelist.append(id)
+    sc_Hall.name+='Hall'
+    sc_Hall.write_poscar()
+    return namelist
+\end{verbnobox}    
+    
+\section{Solution energies calculation}
+\begin{verbnobox}[\rmfamily]
+def calc_solution_energies(namelist, inum_of_H=0, num_of_H=1, 
+                        cl_ref = None, shift = None):
+    """
+    namelist - list of calculation names
+    cl_ref - initial structure (with (n-1) number of hydrogens)
+    shift - a vector of atoms shift
+    Calculate energy of Hydrogen solution in:
+    inum_of_H - number of hydrogen in the initial structure, 
+    num_of_H - general number of hydrogens in structure under calculation
+    """
+    chem_pot_0 = LFPtet1.e0 - LFP122.e0
+    dmulist = []
+    xlist = []
+    energies = []
+
+    first_calculation = db[namelist[0]]
+    z = 1 #Hydrogen
+    
+    list_of_positions_of_atoms = first_calculation.end.get_specific_elements([z])
+    i = list_of_positions_of_atoms[inum_of_H] # hydrogen number in lists
+    print (i)
+    
+    for name in namelist:
+        dmulist.append( db[name].e0 - cl_ref.e0 - chem_pot_0) 
+        energies.append(db[name].e0)
+        st = db[name].end
+        if shift is not None:
+            st = st.shift_atoms(shift)
+
+        xlist.append(st.xcart[i] )
+    
+    st_ref = cl_ref.end.copy()
+    if shift is not None:
+        st_ref = st_ref.shift_atoms(shift)
+
+    return dmulist, xlist, st_ref, energies
+\end{verbnobox}
+
+\section{Juxtaposition between color and energy of each hydrogen position}
+\begin{verbnobox}[\rmfamily]
+def energy2color(elist, energies, cmap = None):
+    """
+    INPUT:
+    elist - list of energy differences 
+    energies - list of structure energy (with n number of hydrogen)
+    cmap (str) - color map according www.map...
+    """
+    colors = []
+    max_val = max(energies)
+    min_val = min(energies)
+    print('MAX_VALUE', max_val, '\nMIN VALUE', min_val)
+
+    norm = mpl.colors.Normalize(vmin=min_val, vmax=max_val) 
+    # to normalize data from 0.0 (vmin) to 1.0 (vmax)
+    m = cm.ScalarMappable(norm=norm, cmap=mpl.cm.jet) 
+    # RGBA colors to normalization
+    map_to_color = np.vectorize(m.to_rgba)
+
+    for e in elist:
+        color = mpl.colors.rgb2hex(  map_to_color( e )  )
+        colors.append( color )
+
+    return colors
+\end{verbnobox}
+
+\section{To reduce the extreme energy values}
+\begin{verbnobox}[\rmfamily]
+def modify(dmulist, xlist, namelist, mucut=2, mucut1=-10):
+    """
+    to deletet the points with energies more than mucut
+    """
+    new_dmulist = []
+    new_xlist = []
+    new_namelist = []
+    for dmu, x, n in zip(dmulist, xlist, namelist):
+
+        if dmu < mucut:
+            if dmu > mucut1:
+                new_dmulist.append(dmu)
+                new_xlist.append(x)
+                new_namelist.append(n)
+
+    new_xlist_n = []
+    k=0
+    for n in range(len(new_xlist)):
+        k+=1
+        new_xlist_n = new_xlist[n]
+    return new_dmulist, new_xlist, new_namelist
+\end{verbnobox}
+
+\section{To create the jmol script to visualize the full hydrogen distribution}
+\begin{verbnobox}[\rmfamily]
+def write_jmol_script(st, colors, xlist, local_path, num_of_H=0, 
+                      shift = None, shift1 = None):
+
+    jmolfile = '/home/irina/LFP/LFP_scan_O4/file/Henergy4.jmol'
+       
+    stH = st.add_atoms(xlist, 'H')
+    if shift:
+        stH = stH.shift_atoms(shift)
+    if 0:
+        filename = stH.write_poscar()
+    else:
+        filename, png = stH.write_xyz(path = '/home/irina/LFP/LFP_scan_O4/file')
+        stH.write_poscar()
+
+    list_of_positions_of_atoms = stH.get_specific_elements([1])
+    i = list_of_positions_of_atoms[num_of_H]
+
+    print(i)
+    print(st.natom)
+    print (list_of_positions_of_atoms)
+
+    basename = os.path.basename(filename)
+    if local_path:
+        filename = local_path + '/' +basename
+    
+    colors_jmol = [c.replace('#', 'x') for c in colors]
+    
+    with open(jmolfile, 'w') as f:
+        f.write('set frank off \nset autobond off \n')
+        f.write('load "'+filename+'"'+'\n')
+        f.write('select H* \ncpk 30 \n')
+        f.write('set displayCellParameters False ; \n' )
+
+        for i in range(len(xlist)):
+            
+            f.write('select atomno = '+str(i+st.natom+1)+'\n')
+            # f.write('select atomno = '+str(i+2)+'\n')
+            
+            f.write('color ['+colors_jmol[i]+'];\n' )
+
+        xlist = [stH.xcart[i] for i in list_of_positions_of_atoms]
+        xc = sum(xlist)/len(xlist)
+        print(xc)
+
+        stH = stH.copy()
+        # stH= replic(stH, (2, 2, 2))
+        if shift1 is not None:
+            stH = stH.shift_atoms(shift1)
+        # stH = stH.return_atoms_to_cell()
+
+        for i, x in enumerate(stH.xcart):
+            d1, d2 = image_distance(xc, x, stH.rprimd)
+            if d1>10:
+                f.write('select atomno = '+str(i+1)+'; cpk 0\n')
+
+    return jmolfile
+    
+\end{verbnobox}
+\clearpage
+\newpage

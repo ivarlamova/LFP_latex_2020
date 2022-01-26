@@ -1,0 +1,35 @@
+\documentclass[a4paper, 12pt]{skthesis}
+\usepackage{lgrind}
+\usepackage{cmap}
+\usepackage{adjustbox}
+\usepackage{subfig}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage[euler]{textgreek}
+\usepackage{xspace}
+\usepackage{enumerate}
+\usepackage{verbatimbox}
+
+
+\bibliographystyle{unsrt}
+
+\newcommand{\DA}[1]{{\color{blue} (#1)}}
+%\usepackage[T2A]{fontenc}
+
+\begin{document}
+\include{chapters/cover} % Your title pages, abstracts and acknowledgments
+\include{chapters/contents} % Probably you don't need to change it
+%\include{chapters/check}
+%\include{chapters/Rep_1.Abstract}
+%\include{chapters/Rep_2.Thermodyn}
+%\include{chapters/Rep_3.ElecPr}
+\include{chapters/chap1} 
+\include{chapters/chap2}
+\include{chapters/chap3}
+\include{chapters/conclusions}
+\appendix
+\include{chapters/appa}
+%\include{chapters/appb}
+\include{chapters/biblio}
+\end{document}
+
